@@ -1,0 +1,53 @@
+name: CS2 Setup
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  setup_cs2:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+      
+    - name: Download and extract cs2.tar.gz
+      run: |
+        wget -O cs2.tar.gz https://files.mhesemann.de/cs/cs2.tar.gz
+        mkdir -p /cs2
+        tar -xzf cs2.tar.gz -C /cs2
+        
+    - name: Get latest stable SourceMod release URL
+      id: get_sm_url
+      run: |
+        SM_URL=$(curl -s "https://www.sourcemm.net/downloads.php/?branch=stable" | grep -oP '<a class="quick-download download-link" href="\K[^"]+(?="><i class="fa fa-linux"></i><br><span>Linux</span></a>)')
+        echo "::set-output name=url::$SM_URL"
+        
+    - name: Download and extract SourceMod
+      run: |
+        wget -O sm.tar.gz "${{ steps.get_sm_url.outputs.url }}"
+        tar -xzf sm.tar.gz -C /cs2/game/csgo
+        
+    - name: Get latest MatchZy release URL
+      id: get_matchzy_url
+      run: |
+        MATCHZY_URL=$(curl -s "https://github.com/shobhit-pathak/MatchZy/releases/latest" | grep -oP 'href="([^"]+-with-cssharp-linux.zip)"' | grep -oP 'https://github.com[^"]+')
+        echo "::set-output name=url::$MATCHZY_URL"
+        
+    - name: Download and extract MatchZy
+      run: |
+        wget -O matchzy.zip "${{ steps.get_matchzy_url.outputs.url }}"
+        unzip matchzy.zip -d /cs2/game
+        
+    - name: Create cs2.tar.gz artifact
+      run: |
+        tar -czf cs2.tar.gz -C /cs2 .
+        mv cs2.tar.gz ${{ github.workspace }}/cs2.tar.gz
+        
+    - name: Upload cs2.tar.gz as artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: cs2-setup
+        path: ${{ github.workspace }}/cs2.tar.gz
