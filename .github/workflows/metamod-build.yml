@@ -15,7 +15,7 @@ jobs:
       
     - name: Download and extract cs2.tar.gz
       run: |
-        wget -O cs2.tar.gz https://files.mhesemann.de/cs/cs2.tar.gz
+        wget -O cs2.tar.gz https://files.mhesemann.de/cs/cs2.cfg.tgz
         mkdir -p /cs2
         tar -xzf cs2.tar.gz -C /cs2
         
