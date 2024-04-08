@@ -13,16 +13,16 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
       
-    - name: Download and extract cs2.tar.gz
+    - name: Download and extract cs2.cfg.tgz
       run: |
-        wget -O cs2.tar.gz https://files.mhesemann.de/cs/cs2.cfg.tgz
+        wget -O cs2.cfg.tgz https://files.mhesemann.de/cs/cs2.cfg.tgz
         mkdir -p /cs2
-        tar -xzf cs2.tar.gz -C /cs2
+        tar -xzf cs2.cfg.tgz -C /cs2
         
     - name: Get latest stable SourceMod release URL
       id: get_sm_url
       run: |
-        SM_URL=$(curl -s "https://www.sourcemm.net/downloads.php/?branch=stable" | grep -oP '<a class="quick-download download-link" href="\K[^"]+(?="><i class="fa fa-linux"></i><br><span>Linux</span></a>)')
+        SM_URL=$(curl -s "https://www.sourcemm.net/downloads.php/?branch=stable" | grep quick-download |grep '<a'|grep linux|awk -F "href='" '{print $2}'|awk -F "'" '{print $1}')
         echo "::set-output name=url::$SM_URL"
         
     - name: Download and extract SourceMod
@@ -33,7 +33,8 @@ jobs:
     - name: Get latest MatchZy release URL
       id: get_matchzy_url
       run: |
-        MATCHZY_URL=$(curl -s "https://github.com/shobhit-pathak/MatchZy/releases/latest" | grep -oP 'href="([^"]+-with-cssharp-linux.zip)"' | grep -oP 'https://github.com[^"]+')
+        MATCHZY_VERSION=$(curl -sL "https://github.com/shobhit-pathak/MatchZy/releases"|grep 'https://github.com/shobhit-pathak/MatchZy/releases/expanded_assets'|grep -oP '[0-9.]+(?=" >)' | head -n 1)
+        MATCHZY_URL=https://github.com/shobhit-pathak/MatchZy/releases/download/$MATCHZY_VERSION/MatchZy-$MATCHZY_VERSION-with-cssharp-linux.zip
         echo "::set-output name=url::$MATCHZY_URL"
         
     - name: Download and extract MatchZy
