@@ -16,8 +16,8 @@ jobs:
     - name: Download and extract cs2.cfg.tgz
       run: |
         wget -O cs2.cfg.tgz https://files.mhesemann.de/cs/cs2.cfg.tgz
-        mkdir -p ./cs2
-        tar -xzf cs2.cfg.tgz -C ./cs2
+        mkdir -p /cs2
+        tar -xzf cs2.cfg.tgz -C /cs2
 
     - name: Get latest stable SourceMod release URL
       id: get_sm_url
@@ -28,7 +28,7 @@ jobs:
     - name: Download and extract SourceMod
       run: |
         wget -O sm.tar.gz "${{ steps.get_sm_url.outputs.url }}"
-        tar -xzf sm.tar.gz -C ./cs2/game/csgo
+        tar -xzf sm.tar.gz -C /cs2/game/csgo
 
     - name: Get latest MatchZy release URL
       id: get_matchzy_url
@@ -40,11 +40,11 @@ jobs:
     - name: Download and extract MatchZy
       run: |
         wget -O matchzy.zip "${{ steps.get_matchzy_url.outputs.url }}"
-        unzip matchzy.zip -d ./cs2/game
+        unzip matchzy.zip -d /cs2/game
         
     - name: Create cs2.tar.gz artifact
       run: |
-        cd ./cs2 && \
+        cd /cs2 && \
         tar -cvf cs2.tar game post.sh pre.sh && \
         gzip cs2.tar
 
@@ -52,5 +52,5 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: cs2-setup
-        path: ./cs2/cs2.tar.gz
+        path: /cs2/cs2.tar.gz
         overwrite: true
