@@ -8,47 +8,49 @@ on:
 jobs:
   setup_cs2:
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
-      
+
     - name: Download and extract cs2.cfg.tgz
       run: |
         wget -O cs2.cfg.tgz https://files.mhesemann.de/cs/cs2.cfg.tgz
-        mkdir -p /cs2
-        tar -xzf cs2.cfg.tgz -C /cs2
-        
+        mkdir -p ./cs2
+        tar -xzf cs2.cfg.tgz -C ./cs2
+
     - name: Get latest stable SourceMod release URL
       id: get_sm_url
       run: |
         SM_URL=$(curl -s "https://www.sourcemm.net/downloads.php/?branch=stable" | grep quick-download |grep '<a'|grep linux|awk -F "href='" '{print $2}'|awk -F "'" '{print $1}')
         echo "::set-output name=url::$SM_URL"
-        
+
     - name: Download and extract SourceMod
       run: |
         wget -O sm.tar.gz "${{ steps.get_sm_url.outputs.url }}"
-        tar -xzf sm.tar.gz -C /cs2/game/csgo
-        
+        tar -xzf sm.tar.gz -C ./cs2/game/csgo
+
     - name: Get latest MatchZy release URL
       id: get_matchzy_url
       run: |
         MATCHZY_VERSION=$(curl -sL "https://github.com/shobhit-pathak/MatchZy/releases"|grep 'https://github.com/shobhit-pathak/MatchZy/releases/expanded_assets'|grep -oP '[0-9.]+(?=" >)' | head -n 1)
         MATCHZY_URL=https://github.com/shobhit-pathak/MatchZy/releases/download/$MATCHZY_VERSION/MatchZy-$MATCHZY_VERSION-with-cssharp-linux.zip
         echo "::set-output name=url::$MATCHZY_URL"
-        
+
     - name: Download and extract MatchZy
       run: |
         wget -O matchzy.zip "${{ steps.get_matchzy_url.outputs.url }}"
-        unzip matchzy.zip -d /cs2/game
+        unzip matchzy.zip -d ./cs2/game
         
     - name: Create cs2.tar.gz artifact
       run: |
-        tar -czf cs2.tar.gz -C /cs2 .
-        mv cs2.tar.gz ${{ github.workspace }}/cs2.tar.gz
-        
+        cd ./cs2 && \
+        tar -cvf cs2.tar game post.sh pre.sh && \
+        gzip cs2.tar
+
     - name: Upload cs2.tar.gz as artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: cs2-setup
-        path: ${{ github.workspace }}/cs2.tar.gz
+        path: ./cs2/cs2.tar.gz
+        overwrite: true
