@@ -1,6 +1,7 @@
 name: CS2 Setup
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
